@@ -29,6 +29,24 @@ button.addEventListener("click", async function () { // Adiciona um ouvinte de e
         let respostaSpecies = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${valor}`);
         let dadosSpecies = await respostaSpecies.json();
 
+        let urlEvolucao = dadosSpecies.evolution_chain.url; // Obtém a URL da cadeia de evolução do Pokémon
+        let respostaEvolucao = await fetch(urlEvolucao); // Faz uma requisição para a URL da cadeia de evolução
+        let dadosEvolucao = await respostaEvolucao.json(); // Converte a resposta da API para um objeto JavaScript
+        
+        function montarEvolucoes(no) { // Função recursiva para montar a cadeia de evolução do Pokémon
+            let resultado = no.species.name; // Obtém o nome do Pokémon na cadeia de evolução
+
+            if (no.evolves_to.length > 0) { // Verifica se o Pokémon evolui para outro Pokémon
+               let proximas = no.evolves_to.map(evo => montarEvolucoes(evo));
+               resultado += " → " + proximas.join(" | "); // Adiciona as evoluções seguintes à string de resultado, separadas por uma seta e um pipe
+            }
+            return resultado;
+        }
+
+        let evolucaoFormatada = montarEvolucoes(dadosEvolucao.chain);
+
+
+
         let descricao = ""; // Inicializa uma string para armazenar a descrição do Pokémon
         for (let entry of dadosSpecies.flavor_text_entries) { // Loop para percorrer as entradas de texto de sabor e encontrar a descrição em português
             if (entry.language.name === "pt-br") { // Verifica se a linguagem da entrada é português do Brasil
@@ -111,6 +129,7 @@ button.addEventListener("click", async function () { // Adiciona um ouvinte de e
         <img src="${dados.sprites.front_default || 'https://via.placeholder.com/150'}">
         <p>Tipo: ${tipos.trim()}</p>
         <p>Descrição: ${descricao}</p>
+        <p>Evolução: ${evolucaoFormatada}</p>
         <p>Fraquezas: ${fraquezas}</p>
         <p>Resistencias: ${resistencias}</p>
         <p>Imunidades: ${imunidades}</p>
