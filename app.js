@@ -1,5 +1,51 @@
 let button = document.getElementById("botao-buscar"); // Obtém o elemento do botão usando seu ID
 let campo = document.getElementById("campo-pokemon"); // Obtém o elemento do campo de entrada usando seu ID
+let jogosVisiveis = false;
+
+function mostrarJogos() {
+    let area = document.getElementById("area-jogos");
+    let botao = document.getElementById("btn-jogos");
+
+    // Se já estiver visível → FECHA
+    if (jogosVisiveis) {
+        area.innerHTML = "";
+        botao.innerText = "Ver Jogos";
+        jogosVisiveis = false;
+        return;
+    }
+
+    // Se estiver fechado → ABRE
+    area.innerHTML = "<h2>Jogos Pokémon</h2>";
+
+    jogosPokemon.forEach(jogo => {
+        area.innerHTML += `
+            <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+                <h3>${jogo.nome}</h3>
+                <p>${jogo.descricao}</p>
+
+                ${jogo.times.map(time => `
+                    <div style="margin-top:10px;">
+                        <h4>${time.nome}</h4>
+
+                        ${time.pokemons.map(p => `
+                            <div style="margin-left:10px;">
+                                <b>${p.nome}</b><br>
+                                Item: ${p.item} <br>
+                                Nature: ${p.nature} <br>
+                                Moves: ${p.moves.join(", ")}
+                            </div>
+                        `).join("")}
+
+                    </div>
+                `).join("")}
+
+            </div>
+        `;
+    });
+
+    botao.innerText = "Fechar Jogos";
+    jogosVisiveis = true;
+}
 
 async function buscarPokemon(valor) {
     let resultado = document.getElementById("info-pokemon");
@@ -25,7 +71,7 @@ async function buscarPokemon(valor) {
         let urlEvolucao = dadosSpecies.evolution_chain.url; // Obtém a URL da cadeia de evolução do Pokémon
         let respostaEvolucao = await fetch(urlEvolucao); // Faz uma requisição para a URL da cadeia de evolução
         let dadosEvolucao = await respostaEvolucao.json(); // Converte a resposta da API para um objeto JavaScript
-        
+
         function montarEvolucoes(no) { // Função recursiva para montar a cadeia de evolução do Pokémon
             let nome = no.species.name; // Obtém o nome do Pokémon na cadeia de evolução
 
@@ -33,8 +79,8 @@ async function buscarPokemon(valor) {
                 ${nome.charAt(0).toUpperCase() + nome.slice(1)}</span>`; // Formata o nome do Pokémon para que a primeira letra seja maiúscula e as demais minúsculas, e adiciona um span com uma classe e um atributo de dados para o nome do Pokémon
 
             if (no.evolves_to.length > 0) { // Verifica se o Pokémon evolui para outro Pokémon
-               let proximas = no.evolves_to.map(evo => montarEvolucoes(evo));
-               resultado += " → " + proximas.join(" | "); // Adiciona as evoluções seguintes à string de resultado, separadas por uma seta e um pipe
+                let proximas = no.evolves_to.map(evo => montarEvolucoes(evo));
+                resultado += " → " + proximas.join(" | "); // Adiciona as evoluções seguintes à string de resultado, separadas por uma seta e um pipe
             }
             return resultado;
         }
@@ -64,12 +110,17 @@ async function buscarPokemon(valor) {
 
         let nome = dados.name.charAt(0).toUpperCase() + dados.name.slice(1); // Formata o nome do Pokémon para que a primeira letra seja maiúscula e as demais minúsculas
 
+        let favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
+        let jaFavorito = favoritos.some(f => f.nome === valor.toLowerCase());
+
         let tipos = ""; // Inicializa uma string para armazenar os tipos do Pokémon
         for (let t of dados.types) { // Loop para percorrer os tipos do Pokémon e adicionar seus nomes à string
             tipos += t.type.name + " "; // Adiciona o nome do tipo à string, seguido de um espaço
         }
 
         let danos = {}; // Inicializa um objeto para armazenar os tipos de dano e seus multiplicadores
+        let ataquesFortes = {}; // Inicializa um objeto para armazenar os ataques fortes do Pokémon
+
 
         //LOOP PRINCIPAL
         for (let t of dados.types) { // Loop para percorrer os tipos do Pokémon e buscar as informações de dano para cada tipo
@@ -88,21 +139,42 @@ async function buscarPokemon(valor) {
                 }
             }
 
-            
-        for (let r of dadosTipo.damage_relations.half_damage_from) { // Loop para percorrer os tipos que causam dano reduzido ao tipo do Pokémon e atualizar o objeto de danos
-            let nomeTipo = r.name;
 
-            if (danos[nomeTipo]) {
-                danos[nomeTipo] *= 0.5; // Multiplica o valor existente por 0.5 para refletir o dano reduzido
-            } else {
-                danos[nomeTipo] = 0.5; // Define o valor como 0.5 para indicar que o tipo causa dano reduzido
+
+            for (let r of dadosTipo.damage_relations.half_damage_from) { // Loop para percorrer os tipos que causam dano reduzido ao tipo do Pokémon e atualizar o objeto de danos
+                let nomeTipo = r.name;
+
+                if (danos[nomeTipo]) {
+                    danos[nomeTipo] *= 0.5; // Multiplica o valor existente por 0.5 para refletir o dano reduzido
+                } else {
+                    danos[nomeTipo] = 0.5; // Define o valor como 0.5 para indicar que o tipo causa dano reduzido
+                }
+            }
+
+            for (let i of dadosTipo.damage_relations.no_damage_from) { // Loop para percorrer os tipos que não causam dano ao tipo do Pokémon e atualizar o objeto de danos
+                let nomeTipo = i.name; // Obtém o nome do tipo que não causa dano
+                danos[nomeTipo] = 0; // Define o valor como 0 para indicar que o tipo não causa dano
+            }
+
+            for (let forte of dadosTipo.damage_relations.double_damage_to) { // Loop para percorrer os tipos que recebem dano dobrado do tipo do Pokémon e atualizar o objeto de ataques fortes
+                let nomeTipo = forte.name;
+
+                if (ataquesFortes[nomeTipo]) {
+                    ataquesFortes[nomeTipo] *= 2; // Multiplica o valor existente por 2 para refletir o ataque forte
+                } else {
+                    ataquesFortes[nomeTipo] = 2; // Define o valor como 2 para indicar que o tipo causa dano dobrado
+                }
             }
         }
 
-        for (let i of dadosTipo.damage_relations.no_damage_from) { // Loop para percorrer os tipos que não causam dano ao tipo do Pokémon e atualizar o objeto de danos
-            let nomeTipo = i.name; // Obtém o nome do tipo que não causa dano
-            danos[nomeTipo] = 0; // Define o valor como 0 para indicar que o tipo não causa dano
-        }
+
+
+        let fortesContra = ""; // Inicializa uma string para armazenar os tipos que o Pokémon é forte contra
+
+        for (let tipo in ataquesFortes) { // Loop para percorrer os tipos de ataques fortes e adicionar seus nomes à string
+            if (ataquesFortes[tipo] > 1) { // Verifica se o valor do ataque forte é maior que 1, indicando que o Pokémon é forte contra esse tipo
+                fortesContra += `${tipo} `;
+            }
         }
 
 
@@ -120,50 +192,58 @@ async function buscarPokemon(valor) {
             }
         }
 
-    resultado.innerHTML = `
+        resultado.innerHTML = `
         <h2>${nome}</h2>
         <img src="${dados.sprites.front_default || 'https://via.placeholder.com/150'}">
         <p>Tipo: ${tipos.trim()}</p>
         <p>Descrição: ${descricao}</p>
         <p>Evolução: ${evolucaoFormatada}</p>
+        <p>Forte Contra: ${fortesContra}</p>
         <p>Fraquezas: ${fraquezas}</p>
         <p>Resistencias: ${resistencias}</p>
         <p>Imunidades: ${imunidades}</p>
-        <button id="btn-favorito">Adicionar aos Favoritos</button>
+        <button id="btn-favorito" style="font-size: 25px; background:none; border:none; cursor:pointer;">
+            ${jaFavorito ? "★" : "☆"}
+        </button>
         `; // Atualiza o conteúdo HTML do elemento de resultado para exibir as informações do Pokémon, incluindo nome, imagem, tipo, descrição, evolução, fraquezas, resistências, imunidades e um botão para adicionar aos favoritos
 
         let btnFav = document.getElementById("btn-favorito");
-        
-        if (btnFav){
-        btnFav.addEventListener("click", function () {
-            let favoritos = JSON.parse(localStorage.getItem("favoritos")) || []; // Obtém a lista de favoritos do localStorage ou inicializa como um array vazio
 
-            if (!favoritos.some(f => f.nome === valor.toLowerCase())) { // Verifica se o Pokémon já está nos favoritos, comparando o nome do Pokémon com os nomes na lista de favoritos} 
+        btnFav.addEventListener("click", function () {
+            let favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
+
+            let index = favoritos.findIndex(f => f.nome === valor.toLowerCase());
+
+            if (index === -1) {
                 favoritos.push({
                     nome: valor.toLowerCase(),
                     imagem: dados.sprites.front_default
                 });
-                localStorage.setItem("favoritos", JSON.stringify(favoritos)); // Salva a lista de favoritos atualizada no localStorage
-                resultado.innerHTML += "<p>Pokémon adicionado aos favoritos!</p>"; // Exibe uma mensagem de confirmação para o usuário
-            }else {
-                alert("Pokemon já está nos favoritos!"); // Exibe um alerta para informar que o Pokémon já está nos favoritos
+                btnFav.innerHTML = "★";
+            } else {
+                favoritos.splice(index, 1);
+                btnFav.innerHTML = "☆";
             }
-            });
-        }   
 
-        let evolucoes = document.querySelectorAll(".evolucao"); // Seleciona todos os elementos com a classe "evolucao" para adicionar um ouvinte de evento de clique
-            evolucoes.forEach(evo => {
-                evo.addEventListener("click", function () { // Adiciona um ouvinte de evento de clique para cada elemento de evolução
-                    let nome = evo.getAttribute("data-nome"); // Obtém o nome do Pokémon a partir do atributo de dados do elemento clicado
-                    buscarPokemon(nome); // Chama a função buscarPokemon com o nome do Pokémon para exibir suas informações.
-                });
+            localStorage.setItem("favoritos", JSON.stringify(favoritos));
+            mostrarFavoritos();
         });
 
-    mostrarFavoritos(); // Chama a função mostrarFavoritos para atualizar a lista de favoritos exibida na página após adicionar um novo favorito.
+
+
+        let evolucoes = document.querySelectorAll(".evolucao"); // Seleciona todos os elementos com a classe "evolucao" para adicionar um ouvinte de evento de clique
+        evolucoes.forEach(evo => {
+            evo.addEventListener("click", function () { // Adiciona um ouvinte de evento de clique para cada elemento de evolução
+                let nome = evo.getAttribute("data-nome"); // Obtém o nome do Pokémon a partir do atributo de dados do elemento clicado
+                buscarPokemon(nome); // Chama a função buscarPokemon com o nome do Pokémon para exibir suas informações.
+            });
+        });
+
+        mostrarFavoritos(); // Chama a função mostrarFavoritos para atualizar a lista de favoritos exibida na página após adicionar um novo favorito.
 
     } catch (error) { // Bloco catch para lidar com erros que possam ocorrer durante a execução do código dentro do bloco try
-    resultado.innerHTML = "<p>Pokémon não encontrado. Tente novamente.</p>";
-    console.log("error:", error);
+        resultado.innerHTML = "<p>Pokémon não encontrado. Tente novamente.</p>";
+        console.log("error:", error);
     }
 }
 
@@ -196,9 +276,9 @@ function mostrarFavoritos() {
             let nome = btn.getAttribute("data-nome"); // Obtém o nome do Pokémon a partir do atributo de dados do botão clicado
 
             let favoritos = JSON.parse(localStorage.getItem("favoritos")) || []; // Obtém a lista de favoritos do localStorage ou inicializa como um array vazio
-            
+
             favoritos = favoritos.filter(f => f.nome !== nome); // Filtra a lista de favoritos para remover o Pokémon com o nome correspondente ao botão clicado
-            
+
             localStorage.setItem("favoritos", JSON.stringify(favoritos)); // Atualiza a lista de favoritos no localStorage após remover o Pokémon
 
             mostrarFavoritos(); // Atualiza a lista de favoritos exibida na página após remover um favorito
@@ -208,8 +288,8 @@ function mostrarFavoritos() {
 
     document.querySelectorAll(".fav-item").forEach(el => { // Seleciona todos os elementos com a classe "fav-item" para adicionar um ouvinte de evento de clique)
         el.addEventListener("click", function () { // Adiciona um ouvinte de evento de clique para cada elemento de favorito
-           let nome = el.getAttribute("data-nome"); // Obtém o nome do Pokémon a partir do atributo de dados do elemento clicado
-           buscarPokemon(nome); // Chama a função buscarPokemon com o nome do Pokémon para exibir suas informações 
+            let nome = el.getAttribute("data-nome"); // Obtém o nome do Pokémon a partir do atributo de dados do elemento clicado
+            buscarPokemon(nome); // Chama a função buscarPokemon com o nome do Pokémon para exibir suas informações 
         });
     });
 
@@ -226,7 +306,7 @@ button.addEventListener("click", function () { // Adiciona um ouvinte de evento 
     let valor = campo.value.toLowerCase().trim(); // Obtém o valor do campo de entrada, converte para minúsculas e remove espaços extras
     buscarPokemon(valor); // Chama a função buscarPokemon com o valor do campo de entrada
 
-    
+
 });
 
 mostrarFavoritos(); // Chama a função mostrarFavoritos para exibir a lista de favoritos quando a página é carregada pela primeira vez.
