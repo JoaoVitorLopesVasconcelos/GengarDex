@@ -130,7 +130,7 @@ async function buscarPokemon(valor) {
         <p>Resistencias: ${resistencias}</p>
         <p>Imunidades: ${imunidades}</p>
         <button id="btn-favorito">Adicionar aos Favoritos</button>
-        `;
+        `; // Atualiza o conteúdo HTML do elemento de resultado para exibir as informações do Pokémon, incluindo nome, imagem, tipo, descrição, evolução, fraquezas, resistências, imunidades e um botão para adicionar aos favoritos
 
         let btnFav = document.getElementById("btn-favorito");
         
@@ -138,8 +138,11 @@ async function buscarPokemon(valor) {
         btnFav.addEventListener("click", function () {
             let favoritos = JSON.parse(localStorage.getItem("favoritos")) || []; // Obtém a lista de favoritos do localStorage ou inicializa como um array vazio
 
-            if (!favoritos.includes(valor.toLowerCase())) { // Verifica se o nome do Pokémon já está na lista de favoritos para evitar duplicatas
-                favoritos.push(valor.toLowerCase()); // Adiciona o nome do Pokémon à lista de favoritos
+            if (!favoritos.some(f => f.nome === valor.toLowerCase())) { // Verifica se o Pokémon já está nos favoritos, comparando o nome do Pokémon com os nomes na lista de favoritos} 
+                favoritos.push({
+                    nome: valor.toLowerCase(),
+                    imagem: dados.sprites.front_default
+                });
                 localStorage.setItem("favoritos", JSON.stringify(favoritos)); // Salva a lista de favoritos atualizada no localStorage
                 resultado.innerHTML += "<p>Pokémon adicionado aos favoritos!</p>"; // Exibe uma mensagem de confirmação para o usuário
             }else {
@@ -170,15 +173,43 @@ function mostrarFavoritos() {
 
     lista.innerHTML = "<h3>Favoritos:</h3>"; // Define o conteúdo HTML da lista de favoritos, começando com um título
 
-    favoritos.forEach(nome => { // Loop para percorrer a lista de favoritos e adicionar cada Pokémon à lista
+    favoritos.forEach(pokemon => { // Loop para percorrer a lista de favoritos e adicionar cada Pokémon à lista
         lista.innerHTML += `
-            <span class="fav-item" style="cursor: pointer; color: blue;"> ${nome}
-            </span>`; // Adiciona um span para cada Pokémon na lista de favoritos, com uma classe e estilo para indicar que é clicável
+            <div style="margin: 10px; border: 1px solid #ccc; padding: 5px;">
+                <img src="${pokemon.imagem}" width="50">
+
+                <span class="fav-item" data-nome="${pokemon.nome}"
+                    style="cursor:pointer; color: blue; margin-left: 10px;">
+                ${pokemon.nome.charAt(0).toUpperCase() + pokemon.nome.slice(1)}
+                </span>
+
+                <button class="remover-fav" data-nome="${pokemon.nome}"
+                    style="margin-left: 10px;">
+                    &#10060;
+                </button>
+            </div>
+            `; // Adiciona um bloco HTML para cada Pokémon favorito, incluindo uma imagem, o nome do Pokémon e um botão para remover dos favoritos
+    });
+
+    document.querySelectorAll(".remover-fav").forEach(btn => { // Seleciona todos os botões de remoção de favoritos usando a classe "remover-fav" para adicionar um ouvinte de evento de clique
+        btn.addEventListener("click", function () {
+            let nome = btn.getAttribute("data-nome"); // Obtém o nome do Pokémon a partir do atributo de dados do botão clicado
+
+            let favoritos = JSON.parse(localStorage.getItem("favoritos")) || []; // Obtém a lista de favoritos do localStorage ou inicializa como um array vazio
+            
+            favoritos = favoritos.filter(f => f.nome !== nome); // Filtra a lista de favoritos para remover o Pokémon com o nome correspondente ao botão clicado
+            
+            localStorage.setItem("favoritos", JSON.stringify(favoritos)); // Atualiza a lista de favoritos no localStorage após remover o Pokémon
+
+            mostrarFavoritos(); // Atualiza a lista de favoritos exibida na página após remover um favorito
+
+        });
     });
 
     document.querySelectorAll(".fav-item").forEach(el => { // Seleciona todos os elementos com a classe "fav-item" para adicionar um ouvinte de evento de clique)
         el.addEventListener("click", function () { // Adiciona um ouvinte de evento de clique para cada elemento de favorito
-            buscarPokemon(el.innerText); // Chama a função buscarPokemon com o nome do Pokémon clicado para exibir suas informações
+           let nome = el.getAttribute("data-nome"); // Obtém o nome do Pokémon a partir do atributo de dados do elemento clicado
+           buscarPokemon(nome); // Chama a função buscarPokemon com o nome do Pokémon para exibir suas informações 
         });
     });
 
