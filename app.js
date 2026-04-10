@@ -1,15 +1,8 @@
 let button = document.getElementById("botao-buscar"); // Obtém o elemento do botão usando seu ID
 let campo = document.getElementById("campo-pokemon"); // Obtém o elemento do campo de entrada usando seu ID
 
-campo.addEventListener("keydown", function (e) {  // Adiciona um ouvinte de evento para a tecla pressionada no campo de entrada
-    if (e.key === "Enter") { // Verifica se a tecla pressionada é "Enter"
-        button.click(); // Simula um clique no botão para acionar a busca do Pokémon
-    }
-});
-
-button.addEventListener("click", async function () { // Adiciona um ouvinte de evento para o clique do botão
-    let valor = campo.value.toLowerCase().trim(); // Obtém o valor do campo de entrada, converte para minúsculas e remove espaços extras
-    let resultado = document.getElementById("info-pokemon"); // Obtém o elemento onde os resultados serão exibidos usando seu ID
+async function buscarPokemon(valor) {
+    let resultado = document.getElementById("info-pokemon");
 
     if (!valor) { // Verifica se o valor do campo de entrada está vazio, o ! significa "não"
         resultado.innerHTML = "<p>Por favor, insira o nome do Pokémon.</p>";
@@ -34,7 +27,10 @@ button.addEventListener("click", async function () { // Adiciona um ouvinte de e
         let dadosEvolucao = await respostaEvolucao.json(); // Converte a resposta da API para um objeto JavaScript
         
         function montarEvolucoes(no) { // Função recursiva para montar a cadeia de evolução do Pokémon
-            let resultado = no.species.name; // Obtém o nome do Pokémon na cadeia de evolução
+            let nome = no.species.name; // Obtém o nome do Pokémon na cadeia de evolução
+
+            let resultado = `<span class="evolucao" data-nome="${nome}" style="cursor:pointer; color: purple; text-decoration: underline;"> 
+                ${nome.charAt(0).toUpperCase() + nome.slice(1)}</span>`; // Formata o nome do Pokémon para que a primeira letra seja maiúscula e as demais minúsculas, e adiciona um span com uma classe e um atributo de dados para o nome do Pokémon
 
             if (no.evolves_to.length > 0) { // Verifica se o Pokémon evolui para outro Pokémon
                let proximas = no.evolves_to.map(evo => montarEvolucoes(evo));
@@ -133,10 +129,73 @@ button.addEventListener("click", async function () { // Adiciona um ouvinte de e
         <p>Fraquezas: ${fraquezas}</p>
         <p>Resistencias: ${resistencias}</p>
         <p>Imunidades: ${imunidades}</p>
+        <button id="btn-favorito">Adicionar aos Favoritos</button>
         `;
 
-} catch (error) { // Bloco catch para lidar com erros que possam ocorrer durante a execução do código dentro do bloco try
+        let btnFav = document.getElementById("btn-favorito");
+        
+        if (btnFav){
+        btnFav.addEventListener("click", function () {
+            let favoritos = JSON.parse(localStorage.getItem("favoritos")) || []; // Obtém a lista de favoritos do localStorage ou inicializa como um array vazio
+
+            if (!favoritos.includes(valor.toLowerCase())) { // Verifica se o nome do Pokémon já está na lista de favoritos para evitar duplicatas
+                favoritos.push(valor.toLowerCase()); // Adiciona o nome do Pokémon à lista de favoritos
+                localStorage.setItem("favoritos", JSON.stringify(favoritos)); // Salva a lista de favoritos atualizada no localStorage
+                resultado.innerHTML += "<p>Pokémon adicionado aos favoritos!</p>"; // Exibe uma mensagem de confirmação para o usuário
+            }else {
+                alert("Pokemon já está nos favoritos!"); // Exibe um alerta para informar que o Pokémon já está nos favoritos
+            }
+            });
+        }   
+
+        let evolucoes = document.querySelectorAll(".evolucao"); // Seleciona todos os elementos com a classe "evolucao" para adicionar um ouvinte de evento de clique
+            evolucoes.forEach(evo => {
+                evo.addEventListener("click", function () { // Adiciona um ouvinte de evento de clique para cada elemento de evolução
+                    let nome = evo.getAttribute("data-nome"); // Obtém o nome do Pokémon a partir do atributo de dados do elemento clicado
+                    buscarPokemon(nome); // Chama a função buscarPokemon com o nome do Pokémon para exibir suas informações.
+                });
+        });
+
+    mostrarFavoritos(); // Chama a função mostrarFavoritos para atualizar a lista de favoritos exibida na página após adicionar um novo favorito.
+
+    } catch (error) { // Bloco catch para lidar com erros que possam ocorrer durante a execução do código dentro do bloco try
     resultado.innerHTML = "<p>Pokémon não encontrado. Tente novamente.</p>";
     console.log("error:", error);
+    }
 }
+
+function mostrarFavoritos() {
+    let lista = document.getElementById("lista-favoritos"); // Obtém o elemento da lista de favoritos usando seu ID
+    let favoritos = JSON.parse(localStorage.getItem("favoritos")) || []; // Obtém a lista de favoritos do localStorage ou inicializa como um array vazio
+
+    lista.innerHTML = "<h3>Favoritos:</h3>"; // Define o conteúdo HTML da lista de favoritos, começando com um título
+
+    favoritos.forEach(nome => { // Loop para percorrer a lista de favoritos e adicionar cada Pokémon à lista
+        lista.innerHTML += `
+            <span class="fav-item" style="cursor: pointer; color: blue;"> ${nome}
+            </span>`; // Adiciona um span para cada Pokémon na lista de favoritos, com uma classe e estilo para indicar que é clicável
+    });
+
+    document.querySelectorAll(".fav-item").forEach(el => { // Seleciona todos os elementos com a classe "fav-item" para adicionar um ouvinte de evento de clique)
+        el.addEventListener("click", function () { // Adiciona um ouvinte de evento de clique para cada elemento de favorito
+            buscarPokemon(el.innerText); // Chama a função buscarPokemon com o nome do Pokémon clicado para exibir suas informações
+        });
+    });
+
+}
+
+
+campo.addEventListener("keydown", function (e) {  // Adiciona um ouvinte de evento para a tecla pressionada no campo de entrada
+    if (e.key === "Enter") { // Verifica se a tecla pressionada é "Enter"
+        buscarPokemon(campo.value.toLowerCase().trim()); // Simula um clique no botão para acionar a busca do Pokémon
+    }
 });
+
+button.addEventListener("click", function () { // Adiciona um ouvinte de evento para o clique do botão
+    let valor = campo.value.toLowerCase().trim(); // Obtém o valor do campo de entrada, converte para minúsculas e remove espaços extras
+    buscarPokemon(valor); // Chama a função buscarPokemon com o valor do campo de entrada
+
+    
+});
+
+mostrarFavoritos(); // Chama a função mostrarFavoritos para exibir a lista de favoritos quando a página é carregada pela primeira vez.
