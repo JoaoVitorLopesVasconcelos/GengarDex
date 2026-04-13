@@ -2,46 +2,88 @@ let button = document.getElementById("botao-buscar"); // Obtém o elemento do bo
 let campo = document.getElementById("campo-pokemon"); // Obtém o elemento do campo de entrada usando seu ID
 let jogosVisiveis = false;
 
+function corTipo(tipo) {
+    const cores = {
+        fire: "#f44336",
+        water: "#2196f3",
+        grass: "#4caf50",
+        electric: "#ffeb3b",
+        ghost: "#9c27b0",
+        poison: "#8e24aa",
+        flying: "#90caf9",
+        bug: "#8bc34a",
+        normal: "#bdbdbd"
+    };
+
+    return cores[tipo] || "#777";
+}
+
 function mostrarJogos() {
     let area = document.getElementById("area-jogos");
     let botao = document.getElementById("btn-jogos");
 
-    // Se já estiver visível → FECHA
     if (jogosVisiveis) {
         area.innerHTML = "";
-        botao.innerText = "Ver Jogos";
+        botao.innerText = "Show Games";
         jogosVisiveis = false;
         return;
     }
 
-    // Se estiver fechado → ABRE
-    area.innerHTML = "<h2>Jogos Pokémon</h2>";
+    let html = "<h2>Games</h2>";
 
     jogosPokemon.forEach(jogo => {
-        area.innerHTML += `
-            <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+
+        html += `
+        <div class="card-jogo">
+
+            <div class="header-jogo">
                 <h3>${jogo.nome}</h3>
                 <p>${jogo.descricao}</p>
+            </div>
 
-                ${jogo.times.map(time => `
-                    <div style="margin-top:10px;">
-                        <h4>${time.nome}</h4>
+            ${jogo.times.map(time => `
+                <div class="time">
+                    <h4>${time.nome}</h4>
 
+                    <div class="grid-time">
                         ${time.pokemons.map(p => `
-                            <div style="margin-left:10px;">
-                                <b>${p.nome}</b><br>
-                                Item: ${p.item} <br>
-                                Nature: ${p.nature} <br>
-                                Moves: ${p.moves.join(", ")}
+                            <div class="pokemon-time">
+
+                                <img 
+                                    src="https://img.pokemondb.net/sprites/home/normal/${p.nome.toLowerCase()}.png"
+                                    class="sprite"
+                                >
+
+                                <div class="info">
+                                    <b>${p.nome}</b>
+
+                                    <div class="linha">
+                                        <span class="label">Item:</span>
+                                        <span>${p.item}</span>
+                                    </div>
+
+                                    <div class="linha">
+                                        <span class="label">Nature:</span>
+                                        <span>${p.nature}</span>
+                                    </div>
+
+                                    <div class="linha moves">
+                                        ${p.moves.map(m => `<span class="move">${m}</span>`).join("")}
+                                    </div>
+                                </div>
+
                             </div>
                         `).join("")}
-
                     </div>
-                `).join("")}
 
-            </div>
+                </div>
+            `).join("")}
+
+        </div>
         `;
     });
+
+    area.innerHTML = html;
 
     botao.innerText = "Fechar Jogos";
     jogosVisiveis = true;
@@ -115,7 +157,15 @@ async function buscarPokemon(valor) {
 
         let tipos = ""; // Inicializa uma string para armazenar os tipos do Pokémon
         for (let t of dados.types) { // Loop para percorrer os tipos do Pokémon e adicionar seus nomes à string
-            tipos += t.type.name + " "; // Adiciona o nome do tipo à string, seguido de um espaço
+            tipos += `<span style="
+                background:${corTipo(t.type.name)};
+                padding:5px 10px;
+                border-radius:10px;
+                margin:2px;
+                display:inline-block;
+                ">
+                ${t.type.name}
+                </span>`;
         }
 
         let danos = {}; // Inicializa um objeto para armazenar os tipos de dano e seus multiplicadores
@@ -193,19 +243,25 @@ async function buscarPokemon(valor) {
         }
 
         resultado.innerHTML = `
+        <div class="card-pokemon">
         <h2>${nome}</h2>
         <img src="${dados.sprites.front_default || 'https://via.placeholder.com/150'}">
-        <p>Tipo: ${tipos.trim()}</p>
-        <p>Descrição: ${descricao}</p>
-        <p>Evolução: ${evolucaoFormatada}</p>
-        <p>Forte Contra: ${fortesContra}</p>
-        <p>Fraquezas: ${fraquezas}</p>
-        <p>Resistencias: ${resistencias}</p>
-        <p>Imunidades: ${imunidades}</p>
-        <button id="btn-favorito" style="font-size: 25px; background:none; border:none; cursor:pointer;">
+
+        <p class="tipos">Type: ${tipos.trim()}</p>
+        <p>${descricao}</p>
+
+        <p><b>Evolution:</b> ${evolucaoFormatada}</p>
+
+        <p><b>Strengths:</b> ${fortesContra}</p>
+        <p><b>Weaknesses:</b> ${fraquezas}</p>
+        <p><b>Resistences:</b> ${resistencias}</p>
+        <p><b>Imunities:</b> ${imunidades}</p>
+
+        <button id="btn-favorito" class="estrela">
             ${jaFavorito ? "★" : "☆"}
         </button>
-        `; // Atualiza o conteúdo HTML do elemento de resultado para exibir as informações do Pokémon, incluindo nome, imagem, tipo, descrição, evolução, fraquezas, resistências, imunidades e um botão para adicionar aos favoritos
+        </div>
+        `; // Define o conteúdo HTML do resultado, incluindo o nome, imagem, tipos, descrição, evolução, fraquezas, resistências e um botão para adicionar ou remover dos favoritos
 
         let btnFav = document.getElementById("btn-favorito");
 
@@ -251,24 +307,22 @@ function mostrarFavoritos() {
     let lista = document.getElementById("lista-favoritos"); // Obtém o elemento da lista de favoritos usando seu ID
     let favoritos = JSON.parse(localStorage.getItem("favoritos")) || []; // Obtém a lista de favoritos do localStorage ou inicializa como um array vazio
 
-    lista.innerHTML = "<h3>Favoritos:</h3>"; // Define o conteúdo HTML da lista de favoritos, começando com um título
+    lista.innerHTML = "<h3>Favorites:</h3>"; // Define o conteúdo HTML da lista de favoritos, começando com um título
 
     favoritos.forEach(pokemon => { // Loop para percorrer a lista de favoritos e adicionar cada Pokémon à lista
         lista.innerHTML += `
-            <div style="margin: 10px; border: 1px solid #ccc; padding: 5px;">
-                <img src="${pokemon.imagem}" width="50">
+            <div class="card-fav">
+            <img src="${pokemon.imagem}">
 
-                <span class="fav-item" data-nome="${pokemon.nome}"
-                    style="cursor:pointer; color: blue; margin-left: 10px;">
+            <span class="fav-item" data-nome="${pokemon.nome}">
                 ${pokemon.nome.charAt(0).toUpperCase() + pokemon.nome.slice(1)}
-                </span>
+            </span>
 
-                <button class="remover-fav" data-nome="${pokemon.nome}"
-                    style="margin-left: 10px;">
-                    &#10060;
-                </button>
-            </div>
-            `; // Adiciona um bloco HTML para cada Pokémon favorito, incluindo uma imagem, o nome do Pokémon e um botão para remover dos favoritos
+        <button class="remover-fav" data-nome="${pokemon.nome}">
+            ❌
+        </button>
+        </div>
+        `; // Adiciona um bloco HTML para cada Pokémon favorito, incluindo uma imagem, o nome do Pokémon e um botão para remover dos favoritos
     });
 
     document.querySelectorAll(".remover-fav").forEach(btn => { // Seleciona todos os botões de remoção de favoritos usando a classe "remover-fav" para adicionar um ouvinte de evento de clique

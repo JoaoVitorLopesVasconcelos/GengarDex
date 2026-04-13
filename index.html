@@ -2,6 +2,7 @@
 <html lang="pt-br">
 
 <head>
+    <link rel="stylesheet" href="style.css"> <!-- Link para o arquivo CSS que contém os estilos da página -->
     <meta charset="UTF-8"> <!--Define a codificação de caracteres como UTF-8-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Define a viewport para garantir que o site
     seja responsivo em dispositivos móveis-->
@@ -11,20 +12,20 @@
 <body>
     <header> <!-- Define o cabeçalho da página -->
         <h1>GengarDex</h1>
-        <p>Boas-vindas ao GengarDex, a enciclopédia definitiva para os fãs de Pokémon!</p>
+        <p>Welcome to the ultimate Pokémon encyclopedia!</p>
     </header>
     <section> <!-- Define uma seção para a busca de Pokémon -->
-        <input type="text" id="campo-pokemon" placeholder="Digite o nome do Pokémon">
-        <button id="botao-buscar">Buscar</button>
+        <input type="text" id="campo-pokemon" placeholder="Enter the Pokémon name">
+        <button id="botao-buscar">Search</button>
     </section>
     <div id="info-pokemon"> <!-- Div para exibir as informações do Pokémon --></div>
     <div id="lista-favoritos"> <!-- Div para exibir a lista de favoritos --></div>
     <script src="dadosJogos.js"></script> <!-- Link para o arquivo JavaScript que contém os dados dos jogos -->
     <script src="app.js"></script> <!-- Link para o arquivo JavaScript que contém a lógica da aplicação -->
 
-    <h2>Jogos</h2>
+    <h2>Games</h2>
     <div id="area-jogos"></div> <!-- Div para exibir os jogos -->
-    <button id="btn-jogos" onclick="mostrarJogos()">Ver Jogos</button> <!-- Botão para mostrar os jogos -->
+    <button id="btn-jogos" onclick="mostrarJogos()">Show Games</button> <!-- Botão para mostrar os jogos -->
 </body>
 
 </html>

@@ -2,10 +2,10 @@ const jogosPokemon = [
 
     {
         nome: "Pokémon FireRed",
-        descricao: "Região de Kanto - clássico para iniciantes.",
+        descricao: "Kanto Region - a classic for beginners.",
         times: [
             {
-                nome: "Time Balanceado",
+                nome: "Balanced Team",
                 pokemons: [
                     { nome: "Charizard", item: "Charcoal", nature: "Modest", moves: ["Flamethrower", "Fly", "Dragon Claw", "Slash"] },
                     { nome: "Jolteon", item: "Magnet", nature: "Timid", moves: ["Thunderbolt", "Thunder Wave", "Shadow Ball", "Quick Attack"] },
@@ -20,10 +20,10 @@ const jogosPokemon = [
 
     {
         nome: "Pokémon Emerald",
-        descricao: "Hoenn com dificuldade maior e mais estratégia.",
+        descricao: "Hoenn with greater difficulty and more strategy.",
         times: [
             {
-                nome: "Time Forte",
+                nome: "Strong Team",
                 pokemons: [
                     { nome: "Swampert", item: "Leftovers", nature: "Relaxed", moves: ["Surf", "Earthquake", "Ice Beam", "Protect"] },
                     { nome: "Gardevoir", item: "Twisted Spoon", nature: "Modest", moves: ["Psychic", "Calm Mind", "Thunderbolt", "Shadow Ball"] },
@@ -38,10 +38,10 @@ const jogosPokemon = [
 
     {
         nome: "Pokémon Platinum",
-        descricao: "Sinnoh com mecânicas modernas.",
+        descricao: "Sinnoh with modern mechanics.",
         times: [
             {
-                nome: "Time Completo",
+                nome: "Complete Team",
                 pokemons: [
                     { nome: "Infernape", item: "Life Orb", nature: "Naive", moves: ["Flamethrower", "Close Combat", "Grass Knot", "U-turn"] },
                     { nome: "Gyarados", item: "Leftovers", nature: "Adamant", moves: ["Waterfall", "Ice Fang", "Dragon Dance", "Earthquake"] },
@@ -56,10 +56,10 @@ const jogosPokemon = [
 
     {
         nome: "Pokémon HeartGold/SoulSilver",
-        descricao: "Johto + Kanto, longa jornada.",
+        descricao: "Johto + Kanto, long journey.",
         times: [
             {
-                nome: "Time Equilibrado",
+                nome: "Balanced Team",
                 pokemons: [
                     { nome: "Typhlosion", item: "Charcoal", nature: "Modest", moves: ["Flamethrower", "Focus Blast", "Swift", "Sunny Day"] },
                     { nome: "Ampharos", item: "Magnet", nature: "Modest", moves: ["Thunderbolt", "Signal Beam", "Thunder Wave", "Light Screen"] },
@@ -74,10 +74,10 @@ const jogosPokemon = [
 
     {
         nome: "Pokémon Black/White",
-        descricao: "Região de Unova, só Pokémon novos.",
+        descricao: "Unova Region, only new Pokémon.",
         times: [
             {
-                nome: "Time Forte",
+                nome: "Strong Team",
                 pokemons: [
                     { nome: "Samurott", item: "Mystic Water", nature: "Modest", moves: ["Surf", "Ice Beam", "Megahorn", "Aqua Jet"] },
                     { nome: "Excadrill", item: "Soft Sand", nature: "Adamant", moves: ["Earthquake", "Iron Head", "Rock Slide", "Swords Dance"] },
@@ -92,10 +92,10 @@ const jogosPokemon = [
 
     {
         nome: "Pokémon X/Y",
-        descricao: "Kalos com mega evoluções.",
+        descricao: "Kalos with mega evolutions.",
         times: [
             {
-                nome: "Time Meta",
+                nome: "Meta Team",
                 pokemons: [
                     { nome: "Greninja", item: "Life Orb", nature: "Timid", moves: ["Surf", "Ice Beam", "Dark Pulse", "Extrasensory"] },
                     { nome: "Talonflame", item: "Sharp Beak", nature: "Jolly", moves: ["Brave Bird", "Flare Blitz", "U-turn", "Roost"] },
@@ -110,10 +110,10 @@ const jogosPokemon = [
 
     {
         nome: "Pokémon Sun/Moon",
-        descricao: "Alola e mecânica de Z-Moves.",
+        descricao: "Alola and Z-Moves mechanics.",
         times: [
             {
-                nome: "Time Completo",
+                nome: "Complete Team",
                 pokemons: [
                     { nome: "Decidueye", item: "Miracle Seed", nature: "Adamant", moves: ["Leaf Blade", "Spirit Shackle", "Sucker Punch", "Roost"] },
                     { nome: "Toxapex", item: "Black Sludge", nature: "Bold", moves: ["Scald", "Toxic", "Recover", "Baneful Bunker"] },
@@ -127,3 +127,4 @@ const jogosPokemon = [
     }
 
 ];
+console.log("DADOS CARREGADOS:", jogosPokemon.length);
