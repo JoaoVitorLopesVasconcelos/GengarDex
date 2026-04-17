@@ -93,17 +93,17 @@ async function buscarPokemon(valor) {
     let resultado = document.getElementById("info-pokemon");
 
     if (!valor) { // Verifica se o valor do campo de entrada está vazio, o ! significa "não"
-        resultado.innerHTML = "<p>Por favor, insira o nome do Pokémon.</p>";
+        resultado.innerHTML = "<p>Please, insert a Pokémon name.</p>";
         return;
     }
 
     try { // Início do bloco try para lidar com erros
-        resultado.innerHTML = "<p>Carregando...</p>"; // Exibe uma mensagem de carregamento enquanto os dados estão sendo buscados
+        resultado.innerHTML = "<p>Loading...</p>"; // Exibe uma mensagem de carregamento enquanto os dados estão sendo buscados
 
         let resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${valor}`); // Faz uma requisição para a API do Pokémon usando o valor do campo de entrada
 
         if (!resposta.ok) { // Verifica se a resposta da API não foi bem-sucedida
-            throw new Error("Pokémon não encontrado");
+            throw new Error("Pokémon not found");
         }
 
         let dados = await resposta.json(); // Converte a resposta da API para um objeto JavaScript
